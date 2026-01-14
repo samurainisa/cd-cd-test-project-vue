@@ -34,7 +34,6 @@ jobs:
       - name: Build and push image
         run: |
           docker buildx build \
-            --platform linux/amd64 \
             --tag "$IMAGE_NAME:${{ github.sha }}" \
             --tag "$IMAGE_NAME:latest" \
             --push .
@@ -52,39 +51,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host:     ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
+          key:      ${{ secrets.SSH_PRIVATE_KEY }}
+          port:     ${{ secrets.SSH_PORT || 22 }}
           envs: GITHUB_TOKEN
           script: |
             set -euo pipefail
 
-            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-            export DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
-            export DOCKER_TAG=${{ github.sha }}
-            export DOCKER_IMAGE="${DOCKER_USERNAME}/vue-spa"
+            DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
+            DOCKER_TAG=${{ github.sha }}
+            DOCKER_IMAGE="${DOCKER_USERNAME}/vue-spa"
 
             REPO_DIR="/home/samurainisa/cd-cd-test-project-vue"
-            REPO_URL="https://github.com/samurainisa/cd-cd-test-project-vue.git"
-            if [ -n "$GITHUB_TOKEN" ]; then
-              REPO_URL="https://${GITHUB_TOKEN}@github.com/samurainisa/cd-cd-test-project-vue.git"
-            fi
-
-            # Если нет .git или директории — пересобираем
-            if [ ! -d "${REPO_DIR}/.git" ]; then
-              rm -rf "${REPO_DIR}"
-              mkdir -p "${REPO_DIR}"
-              git clone "${REPO_URL}" "${REPO_DIR}"
-            fi
-
-            cd "${REPO_DIR}"
-            git remote set-url origin "${REPO_URL}" 2>/dev/null || true
-            git pull origin main || {
-              echo "Failed to pull. Make sure the repository is accessible."
-              exit 1
-            }
-
+  
             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            DOCKER_IMAGE=$DOCKER_IMAGE DOCKER_TAG=$DOCKER_TAG docker compose pull
-            DOCKER_IMAGE=$DOCKER_IMAGE DOCKER_TAG=$DOCKER_TAG docker compose up -d --no-build --remove-orphans
+            mkdir -p "${REPO_DIR}"
+            cd "${REPO_DIR}"
+            docker compose pull
+            docker compose up -d --no-build --remove-orphans

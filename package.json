@@ -40,5 +40,9 @@
     "vite": "^7.1.11",
     "vite-plugin-vue-devtools": "^8.0.3",
     "vue-tsc": "^3.1.1"
+  },
+  "volta": {
+    "node": "22.21.1",
+    "yarn": "1.22.22"
   }
 }

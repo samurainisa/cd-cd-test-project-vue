@@ -1,13 +1,9 @@
 services:
   web:
     image: ${DOCKER_IMAGE:-local/vue-spa}:${DOCKER_TAG:-latest}
-    build:
-      context: .
-      dockerfile: Dockerfile
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
-    container_name: cicd-test-web
     restart: unless-stopped
