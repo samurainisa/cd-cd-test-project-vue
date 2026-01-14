@@ -30,7 +30,7 @@ jobs:
           node-version: 22
       - name: Build project
         run: |
-          yarn install --frozen-lockfile
+          yarn install
           yarn build
       - uses: docker/setup-buildx-action@v3
       - name: Log in to Docker Hub
